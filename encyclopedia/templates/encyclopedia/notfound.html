@@ -1,0 +1,17 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    Not found
+{% endblock %}
+
+{% block body %}
+
+    <h1>"{{ title }}"</h1>
+    <h3>This entry does not exist yet</h3>
+    <br>
+    <p>But you can help us by 
+        <a href="{% url 'encyclopedia:create' %}">creating new entry</a>
+         to make our wiki bigger! :D</p>
+
+
+{% endblock %}

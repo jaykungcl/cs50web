@@ -1,0 +1,24 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+    Create entry
+{% endblock %}
+
+{% block body %}
+
+    {% if exist %}
+    <div class="alert alert-danger" role="alert">
+        This entry already exist. To view or edit <a href="{% url 'encyclopedia:entry' entry.title %}">click here</a>
+    </div>
+    {% endif %}
+    <div class="form-group">
+        <form action="{% url 'encyclopedia:create' %}" method="post" autocomplete="off">
+            {% csrf_token %}
+            {{ form }}
+            <br>
+            <input type="submit" value="Save">
+        </form>
+    </div>
+    
+
+{% endblock %}
