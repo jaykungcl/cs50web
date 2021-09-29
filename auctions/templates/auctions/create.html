@@ -1,0 +1,22 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        Please put in valid information
+    </div>
+    {% endif %}
+    <h2>Create New Listing</h2>
+    <div class="container container-fluid my-4">
+        <form action="{% url 'create' %}" method="post" enctype="multipart/form-data" autocomplete="off">
+            <div class="form">
+                {% csrf_token %}
+                {{ form }}  
+                <br>
+                <input class="btn btn-primary" type="submit" value="Save">
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

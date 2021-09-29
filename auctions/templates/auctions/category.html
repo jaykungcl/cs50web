@@ -1,0 +1,33 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Category: {{ category }}</h2>
+    
+    <div class="container-fluid">
+        {% for listing in listings %}
+            <div class="row my-4 border">
+                <div class="card-img col-4">
+                    <img class="img-fluid" src="{{ listing.image.url }}" alt="img">
+                </div>
+                <div class="card-body col-8">
+                    <h5 class="card-title">{{ listing.title }}</h5>
+                    <p class="card-text">{{ listing.description }}</p>
+                    <p class="card-text">Price: 
+                        {% if listing.current_bid %}
+                            ${{ listing.current_bid|floatformat:2 }}
+                        {% else %}
+                            ${{ listing.starting_bid|floatformat:2 }}    
+                        {% endif %}
+                    </p>
+                    <p><small class="text-muted">{{ listing.created_at }}</small></p>
+                    <a href="{% url 'listing' listing.id %}" class="card-link">View Listing</a>
+                </div>
+            </div>
+        {% empty %}
+            <h6 class="text-muted my-5 ml-5">No listing in this category, you can
+                <a href="{% url 'create' %}">Create New Listing</a> and add to this category.
+            </h6>
+        {% endfor %}
+    </div>
+
+{% endblock %}
