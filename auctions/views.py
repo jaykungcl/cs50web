@@ -157,16 +157,15 @@ def listing(request, listing_id):
                 listing.active = False
                 listing.save()
         
-    else:
-        return render(request, "auctions/listing.html", {
-            "listing": listing,
-            "alert_message": alert_message,
-            "alert_danger": alert_danger,
-            "in_watchlist": request.user in listing.watchers.all(),
-            "bid_form": NewBidForm(),
-            "comments": listing.get_comments.all(),
-            "comment_form": NewCommentForm()
-        })
+    return render(request, "auctions/listing.html", {
+        "listing": listing,
+        "alert_message": alert_message,
+        "alert_danger": alert_danger,
+        "in_watchlist": request.user in listing.watchers.all(),
+        "bid_form": NewBidForm(),
+        "comments": listing.get_comments.all(),
+        "comment_form": NewCommentForm()
+    })
 
 @login_required
 def categories(request):

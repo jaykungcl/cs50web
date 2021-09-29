@@ -1,5 +1,7 @@
 {% extends "auctions/layout.html" %}
 
+{% block title %}: {{ listing.title }}{% endblock %}
+
 {% block body %}
     {% if alert_message %}
     <div class="alert alert-success" role="alert">
