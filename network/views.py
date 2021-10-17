@@ -1,109 +1,89 @@
 import json
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http.response import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-# from django.views.generic import ListView
 from django.core.paginator import Paginator
-
 from .models import *
 from .forms import NewPostForm
 
 def index(request):
+    # Check if request method is post (send new post)
     if request.method == 'POST':
         post = request.POST.copy()
         post["posted_by"] = request.user
         request.POST = post
-
         new_post = NewPostForm(post)
 
         if new_post.is_valid():
             new_post.save()
 
+        # Return to index page and update posts
         return HttpResponseRedirect(reverse("index"))
 
+    # Render new post form
     return render(request, "network/index.html", {
-        "form": NewPostForm(),
-        "posts": Post.objects.all()
+        "form": NewPostForm()
     })
 
 def get_posts(request, page, page_num):
+    profile_name = ""
 
-    # Filter posts return to fetch request
+    # Get all posts
     if page == "all":
         posts = Post.objects.all()
-        print(type(posts))
+
+    # Get only posts from following account
     elif page == "following":
         user = User.objects.get(id=request.user.id)
         profiles = user.get_following.all()
         following = User.objects.filter(profile__in=profiles)
 
-        print(following)
-        # for profile in following:
-        #     profile = profile.user
         posts = Post.objects.filter(posted_by__in=following)
-        # for user in following:
-        #     posts.append(user.get_posts.all())
 
+    # Get posts of profile's user
     else:
         user = User.objects.get(id=page)
         posts = user.get_posts.all()
+        profile_name = user.username
+        print(profile_name)
 
+    # Order newest post first
     posts = posts.order_by("-timestamp").all()
     
+    # Paginator divide posts to 10 posts/page
     paginator = Paginator(posts, 10)
-    # page_num = request.GET.get('page_num')
+    
+    # Get page requested via fetch
     paginated_posts = paginator.get_page(page_num)
 
+    # Return only posts from requested page
     return JsonResponse({
         "posts": [post.serialize(request.user) for post in paginated_posts],
-        "num_pages": paginator.num_pages
+        "num_pages": paginator.num_pages,
+        "profile_name": profile_name
         }, safe=False)
-
-# def paginate(post_list, page, limit):
-#     try:
-#         page = int(page)
-#         if page < 1:
-#             page = 1
-#     except (TypeError, ValueError):
-#         page = 1
-    
-#     try:
-#         limit = int(limit)
-#     except (TypeError, ValueError):
-#         limit = 10
-
-#     paginator = Paginator(post_list, limit)
-#     try:
-#         posts = paginator.page(page)
-#     except PageNotAnInteger:
-#         posts = paginator.page(1)
-#     except EmptyPage:
-#         posts = paginator.page(paginator.num_pages)
-#     data = {
-#         "previous_page": posts.has_previous() and posts.previous_page_number() or None,
-#         "next_page": posts.has_next() and posts.next_page_number() or None,
-#         "data": list(posts)
-#     }
-#     return data
 
 @csrf_exempt
 def view_profile(request, user_id):
     user = User.objects.get(id=user_id)
     profile = user.profile
 
+    # Check for fetch request to follow/unfollow
     if request.method == 'PUT':
-        
         data = json.loads(request.body)
+
         if(data.get("follow", "") != ""):
- 
             follow = data.get("follow", "")
+
+            # Change to follow
             if follow:
                 profile.followers.add(request.user)
+
+            # Change to unfollow
             else:
                 profile.followers.remove(request.user)
             profile.save()
@@ -113,17 +93,24 @@ def view_profile(request, user_id):
 
 @csrf_exempt
 def edit_post(request, post_id):
-
-    post = Post.objects.get(id=post_id)
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:
+        post = ''
+    # print(post)
+    # print(type(post))
     
+    # Check for PUT request on post
     if request.method == 'PUT':
         data = json.loads(request.body)
+
+        # If request to edit/save changes to post
         if(data.get("content", "")):
             content = data.get("content", "")
             post.content = content
             
+        # If request to like/unlike post
         if(data.get("like", "") != ""):
-
             like = data.get("like", "")
             if like:
                 post.liked_by.add(request.user)
@@ -131,6 +118,15 @@ def edit_post(request, post_id):
                 post.liked_by.remove(request.user)
 
         post.save()
+    
+    # Check for DELETErequest on post
+    elif request.method == 'DELETE':
+        if(post):
+            post.delete()
+        else:
+            return JsonResponse({"message": "Post does not exist."}, status=403)
+
+        return JsonResponse({"message": "Post deleted."}, status=204)
 
     return JsonResponse([post.serialize(request.user)], safe=False)
 

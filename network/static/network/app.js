@@ -1,53 +1,88 @@
 const postView = document.querySelector('#posts-view');
 const profileView = document.querySelector('#profile-view');
 const form = document.querySelector('#new-post-form');
+const modal = document.querySelector('#deleteModal');
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
+    // Add click event listener to elements on page after finish loading
     document.addEventListener('click', e => {
-        // console.log(e.target.classList.value)
+        
         const post = e.target.closest('.post');
 
+        // Look for edit btn
         if(e.target.classList.contains('edit-btn')) {
-            // console.log(post.id);
             e.target.classList.add('disabled');
             edit_post(post.id);
+
+        // Look for update post btn
         } else if(e.target.classList.contains('update-btn')) {
-            // console.log(post.id);
             update_post(post.id);
+
+        // Look for like btn
         } else if(e.target.classList.contains('like-btn') && !e.target.classList.contains('disabled')) {
-            // console.log('heart');
-            console.log('like')
             toggle_like(post.id, false);
+
+        // Look for unlike btn
         } else if(e.target.classList.contains('unlike-btn') && !e.target.classList.contains('disabled')) {
-            console.log('unlike');
             toggle_like(post.id, true);
+
+        // Look for profile pics/name
         } else if(e.target.classList.contains('show-profile') || e.target.parentElement.classList.contains('show-profile')) {
-            console.log('profile');
+            // Get user id from data attribute
             user_id = e.target.dataset.userId ? e.target.dataset.userId: e.target.parentElement.dataset.userId;
             get_profile(user_id);
             get_posts(user_id, 1);
+
+        // Look fol follow btn
         } else if(e.target.classList.contains('follow-btn')) {
             user_id = e.target.closest('.media').dataset.userId;
             toggle_follow(user_id, false);
+
+        // Look for unfollow btn
         } else if(e.target.classList.contains('unfollow-btn')) {
             user_id = e.target.closest('.media').dataset.userId;
             toggle_follow(user_id, true);
+
+        // Look for following view btn
         } else if(e.target.classList.contains('following-view')) {
             get_posts('following', 1);
+
+        // Look for page change btn
         } else if(e.target.classList.contains('page-btn') || e.target.parentElement.classList.contains('page-btn')) {
             const page_num = e.target.dataset.page ? e.target.dataset.page: e.target.parentElement.dataset.page;
-            // console.log(page_num)
             get_posts(postView.className, page_num);
+
+        // Look for post delete button
+        } else if(e.target.classList.contains('delete-btn')) {
+            const post_id = post.id;
+
+            // Delete post if confirm delete button was clicked
+            modal.onclick = e => {
+                if(e.target.classList.contains('confirm-delete-btn')) {
+                    delete_post(post_id);
+                }
+            }
         }
     });
 
+    // Default: get first page of all posts
     get_posts('all', 1);
 })
+
+// Listen to popstate event (go back)
+window.onpopstate = e => {
+    if(e.state) {
+        get_posts(e.state.page, e.state.page_num);
+    }
+}
+
 
 function get_profile(user_id) {
     profileView.innerHTML = '';
 
+    // Request profile's data
     fetch(`profile/${user_id}`)
     .then(response => response.json())
     .then(data => {
@@ -58,10 +93,10 @@ function get_profile(user_id) {
         element.dataset.userId = `${profile.id}`
 
         let follow_btn = '';
-        console.log(profile.can_follow)
 
-
+        // Check if user can be followed
         if(profile.can_follow) {
+            // Check for follow status (follow/unfollow) and add btn
             follow_btn = profile.is_following ? 
                 `<a class="unfollow-btn btn btn-info btn-sm">
                     <i class="fa fa-check-circle" aria-hidden="true"></i> Following
@@ -70,6 +105,7 @@ function get_profile(user_id) {
                     <i class="fa fa-user-circle-o" aria-hidden="true"></i> Follow
                 </a>` ;
         } else {
+            // Add btn with hidden visibility for spacing purpose
             follow_btn = `<input class="btn btn-sm hidden">`
         }
 
@@ -88,59 +124,71 @@ function get_profile(user_id) {
                     <span class="small text-muted">Followers</span>
                 </div>
             </div>
-        `
+        `;
 
         profileView.append(element);
     })
+    .catch(err => console.log(err));
 }
+
 
 function get_posts(page, page_num) {
     page_num = parseInt(page_num);
+    postView.className = page;
+    postView.dataset.pageNum = page_num;
 
-    if(page === 'all' || page === 'following') {
+    if(page === 'all') {
         if(form) {
             form.style.display = 'block';
         }
         profileView.style.display = 'none';
-    } else {
+        postView.innerHTML = `<h3>All Posts</h3>`;
+
+    } else if(page === 'following') {
         if(form) {
-           form.style.display = 'none'; 
+            form.style.display = 'block';
         }
+        profileView.style.display = 'none';
+        postView.innerHTML = `<h3>Following</h3>`;
+
+    } else {
+        form.style.display = 'none'; 
         profileView.style.display = 'block';
+        postView.innerHTML = `<h3>Posts</h3>`;
     }
 
-    postView.innerHTML = '';
-
-    // let url = new URL
-    // Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
-
+    // Get posts according to requested page & page number
     fetch(`posts/${page}/${page_num}`)
     .then(response => response.json())
     .then(data => {
-        // console.log(typeof posts)
-        // console.log(Object.keys(posts).length === 0)
-        
-        posts = data.posts;
-        num_pages = data.num_pages;
-        // if(page === 'all') {
-        //     postView.className = 'all';
-        // } else if(page === 'following') {
-        //     postView.className = 'following';
-        // } else {
-        //     postView.className = 'profile';
-        // }
-        postView.className = page;
+        // Posts sent back via JSON response
+        const posts = data.posts;
+
+        // Number of total pages
+        const num_pages = data.num_pages;
+
+        // Username of profile's user
+        const profile_name = data.profile_name;
 
         posts.forEach(post => {
             postView.append(new_post(post));
-            // if(post.has_following_user) {
-            //     following
-            // }
         });
+
+        // Push state to history and set URL
+        if(!history.state || (history.state.page !== page || history.state.page_num !== page_num)) {
+            if(page === 'all') {
+                history.pushState({'page': page, 'page_num': page_num}, '', '');
+            } else if(page === 'following') {
+                history.pushState({'page': page, 'page_num': page_num}, '', 'following');
+            } else {
+                history.pushState({'page': page, 'page_num': page_num}, '', `${profile_name}`);
+            }
+        }
+
+        // If no post sent back via JSON response
         if(Object.keys(posts).length === 0){
             const element = document.createElement('div');
             element.className = 'text-center text-muted my-5'
-            // console.log('hi')
             if(page === 'following') {
                 element.innerHTML = `
                     <h5>You haven't follow anyone yet!</h5>
@@ -153,74 +201,64 @@ function get_posts(page, page_num) {
             postView.append(element);
         }
 
+        // Add pagination if there is more than one page
         if(num_pages > 1) {
             const element = document.createElement('nav');
             element.innerHTML = `
-
-                <ul class="pagination justify-content-end">
-                   
-                    
-                </ul>
-   
+                <ul class="pagination justify-content-end"></ul>
             `;
         
             const pagination = element.children[0];
-            // const page_btn = document.createElement('li')
-            // page_btn.className = 'page-item'
-            const nums = [...Array(num_pages).keys()].map(num => num + 1);
-            console.log(typeof page_num)
-            console.log(typeof num_pages)
 
+            // Create array of int from 1 to last page number
+            const nums = [...Array(num_pages).keys()].map(num => num + 1);
+
+            // Case on first page
             if(page_num === 1) {
 
                 nums.forEach(num => {
-                    console.log('run')
                     if(num === page_num || num === page_num + 1 || num === page_num + 2) {
                         pagination.append(create_page_btn(num, page_num, num_pages));
-                    }
+                    };
                 });
-
                 pagination.append(create_page_btn('Next', page_num, num_pages));
                 pagination.append(create_page_btn('Last', page_num, num_pages));
                 
+            // Case on last page
             } else if(page_num === num_pages) {
                 pagination.append(create_page_btn('First', page_num, num_pages));
                 pagination.append(create_page_btn('Previous', page_num, num_pages));
 
                 nums.forEach(num => {
-                    
                     if(num === page_num - 2 || num === page_num - 1 || num === page_num) {
-                        // console.log(page_num-1)
-                        // console.log(page_num-2)
-                        pagination.append(create_page_btn(num, page_num, num_pages));
-                        
-                    }
+                        pagination.append(create_page_btn(num, page_num, num_pages));        
+                    };
                 });
+
             } else {
                 pagination.append(create_page_btn('First', page_num, num_pages));
                 pagination.append(create_page_btn('Previous', page_num, num_pages));
 
                 nums.forEach(num => {
-                    // console.log('out')
                     if(num === page_num - 1 || num === page_num || num === page_num + 1) {
                         pagination.append(create_page_btn(num, page_num, num_pages));
-                        // console.log('in')
                     }
                 });
-
                 pagination.append(create_page_btn('Next', page_num, num_pages));
                 pagination.append(create_page_btn('Last', page_num, num_pages));
-            }
-            
+            };
 
             postView.append(element);
-        }
+        };
 
     })
+    .catch(err => console.log(err))
 }
 
+// Create and return page-btn element
 function create_page_btn(page, page_num, num_pages) {
     const page_btn = document.createElement('li')
+
     if(page === page_num) {
         page_btn.className = 'page-item active';
     } else {
@@ -243,6 +281,7 @@ function create_page_btn(page, page_num, num_pages) {
     return page_btn
 }
 
+// Create and return individual post element
 function new_post(post) {
     const element = document.createElement('div');
     element.id = post.id
@@ -269,32 +308,38 @@ function new_post(post) {
         </div>
     `;
 
+    // Disable like btn if user not logged in
     if(!post.user_logged_in) {
         element.querySelector('.fa').classList.add('disabled')
-    }
+    };
     
     return element;
-    // postContainer.append(element);
 }
 
+
 function edit_post(post_id) {
-    
     fetch(`edit/${post_id}`)
     .then(response => response.json())
     .then(data => {
         const post = data[0];
         const post_body = document.getElementById(post_id).children[1];
 
+        // Change DOM element to edit post view
         post_body.innerHTML = `
-            <textarea class="post-content" style="width: 100%">${post.content}</textarea>
-            <input class="update-btn btn btn-info btn-sm" type="submit" value="Save">
+            <textarea class="post-content mb-1" style="width: 100%">${post.content}</textarea>
+            <div class="d-flex">
+                <input class="update-btn btn btn-info btn-sm mr-2" type="submit" value="Save">
+                <input class="delete-btn btn btn-outline-danger btn-sm" type="submit" value="Delete" data-toggle="modal" data-target="#deleteModal">
+            </div>
         `;
     })
 }
 
+
 function update_post(post_id) {
     const content = document.querySelector('.post-content').value
 
+    // PUT request to update edited post
     fetch(`edit/${post_id}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -305,22 +350,17 @@ function update_post(post_id) {
     .then(data => {
         const post = data[0];
         const old_post = document.getElementById(post_id);
-        // console.log(post.content)
 
         postView.replaceChild(new_post(post), old_post);
     })
+    .catch(err => console.log(err));
 }
 
+
 function toggle_like(post_id, is_liked) {
-    console.log(is_liked)
-
-
     const post_body = document.getElementById(post_id).children[1];
-    // const post_like = post_body.querySelector 
-    // console.log(typeof post_body.children[1])
-    // console.log(typeof postView)
 
-
+    // PUT request to update like status of post
     fetch(`edit/${post_id}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -329,16 +369,13 @@ function toggle_like(post_id, is_liked) {
     })
     .then(response => response.json())
     .then(data => {
-        // if(data[0] === 'login') {
-        //     fetch('login')
-        // }
         const post = data[0];
-        // console.log(post.liked)
 
         const likes = document.createElement('span');
         const btn = document.createElement('span');
         likes.innerHTML = `${post.likes}`;
 
+        // Update like btn and number of likes on DOM
         if(post.liked) {
             btn.innerHTML = `<i class="unlike-btn fa fa-heart"></i>`;
             post_body.replaceChild(btn, post_body.children[1]);
@@ -348,15 +385,13 @@ function toggle_like(post_id, is_liked) {
             post_body.replaceChild(btn, post_body.children[1]);
             post_body.replaceChild(likes, post_body.children[2])
         }
-        // const old_post = document.getElementById(post_id);
-        // // console.log(post.content)
-
-        // postContainer.replaceChild(new_post(post), old_post);
     })
+    .catch(err => console.log(err));
 }
 
 function toggle_follow(user_id, is_following) {
     
+    // PUT request to update follow status
     fetch(`profile/${user_id}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -373,13 +408,31 @@ function toggle_follow(user_id, is_following) {
 
         const old_follow_btn = element.children[0].children[0];
         const new_follow_btn = document.createElement('span')
+
         new_follow_btn.innerHTML = profile.is_following ? 
             `<a class="unfollow-btn btn btn-info btn-sm">
                 <i class="fa fa-check-circle" aria-hidden="true"></i> Following
             </a>` :
             `<a class="follow-btn btn btn-outline-info btn-sm">
                 <i class="fa fa-user-circle-o" aria-hidden="true"></i> Follow
-            </a>` ;
+            </a>`;
+
         element.children[0].replaceChild(new_follow_btn, old_follow_btn);
     })
+    .catch(err => console.log(err));
+}
+
+function delete_post(post_id) {
+
+    // Send delete request
+    fetch(`edit/${post_id}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+
+        get_posts(postView.className, postView.dataset.pageNum);
+    })
+    .catch(err => console.log(err));
 }
