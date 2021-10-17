@@ -1,0 +1,39 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    {% if user.is_authenticated %}
+    <form id="new-post-form" class="my-3" method="POST" action="{% url 'index' %}">
+        {% csrf_token %}
+        <i class="fa fa-plus-square-o" aria-hidden="true"></i>
+        {{ form }}
+        <input class="post-btn btn btn-info mt-2" type="submit" value="Post">
+    </form>
+    {% endif %}
+
+    <div id="profile-view" class="border rounded px-4 py-3 my-2" style="display: none;">
+        <!-- <div class="media">
+            <img class="img-thumbnail rounded-circle" src="{{ user.profile.image.url }}" width="200px" height="200px">
+            <div class="media-body pl-4">
+                {% if user.is_authenticated %}
+
+                <div class="d-flex justify-content-end">
+                    <a class="follow-btn btn btn-outline-info btn-sm">
+                        <i class="fa fa-user-circle-o" aria-hidden="true"></i> Follow
+                    </a>
+                    <a class="unollow-btn btn btn-info btn-sm">
+                        <i class="fa fa-check-circle" aria-hidden="true"></i> Followed
+                    </a>
+                </div>
+
+                {% endif %}
+                <h2 class="p-2">{{ user.username }}</h2>
+
+            </div>
+        
+
+        </div> -->
+    </div>
+
+    <div id="posts-view">
+    </div>
+{% endblock %}
