@@ -22,7 +22,8 @@ class Profile(models.Model):
             "followers_num": self.followers.count(),
             "following_num": self.user.get_following.count(),
             "is_following": not user.is_anonymous and self in user.get_following.all(),
-            "can_follow": not user.is_anonymous and self.user != user
+            "not_user": self.user != user,
+            "user_logged_in": not user.is_anonymous,
         }       
 
 class Post(models.Model):

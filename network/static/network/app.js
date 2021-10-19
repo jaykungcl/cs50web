@@ -1,7 +1,8 @@
 const postView = document.querySelector('#posts-view');
 const profileView = document.querySelector('#profile-view');
-const form = document.querySelector('#new-post-form');
+const formView = document.querySelector('#form-view');
 const modal = document.querySelector('#deleteModal');
+const updateProfileView = document.querySelector('#update-profile-view');
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -12,13 +13,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const post = e.target.closest('.post');
 
         // Look for edit btn
-        if(e.target.classList.contains('edit-btn')) {
+        if(e.target.classList.contains('edit-post-btn')) {
             e.target.classList.add('disabled');
             edit_post(post.id);
 
         // Look for update post btn
-        } else if(e.target.classList.contains('update-btn')) {
+        } else if(e.target.classList.contains('update-post-btn')) {
             update_post(post.id);
+
+        // Look for cancel update post tbn
+        } else if(e.target.classList.contains('cancel-update-post-btn')) {
+            post.querySelector('.edit-post-btn').classList.remove('disabled');
+            cancel_update_post(post.id);
 
         // Look for like btn
         } else if(e.target.classList.contains('like-btn') && !e.target.classList.contains('disabled')) {
@@ -35,13 +41,26 @@ document.addEventListener('DOMContentLoaded', () => {
             get_profile(user_id);
             get_posts(user_id, 1);
 
-        // Look fol follow btn
-        } else if(e.target.classList.contains('follow-btn')) {
+        // Look for edit profile btn
+        } else if(e.target.classList.contains('edit-profile-btn') || e.target.parentElement.classList.contains('edit-profile-btn')) {
+            user_id = e.target.closest('.media').dataset.userId;
+            edit_profile(user_id);
+
+        // If update profile btn clicked request will be sent via form and process in index view
+
+        // Look for cancel update profile btn
+        } else if(e.target.classList.contains('cancel-update-profile-btn')) {
+            /////////////
+            user_id = e.target.closest('.media').dataset.userId;
+            cancel_update_profile(user_id);
+
+        // Look for follow btn
+        } else if(e.target.classList.contains('follow-btn') || e.target.parentElement.classList.contains('follow-btn')) {
             user_id = e.target.closest('.media').dataset.userId;
             toggle_follow(user_id, false);
 
         // Look for unfollow btn
-        } else if(e.target.classList.contains('unfollow-btn')) {
+        } else if(e.target.classList.contains('unfollow-btn') || e.target.parentElement.classList.contains('unfollow-btn')) {
             user_id = e.target.closest('.media').dataset.userId;
             toggle_follow(user_id, true);
 
@@ -56,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Look for post delete button
         } else if(e.target.classList.contains('delete-btn')) {
-            const post_id = post.id;
+            let post_id = post.id;
 
             // Delete post if confirm delete button was clicked
             modal.onclick = e => {
@@ -70,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default: get first page of all posts
     get_posts('all', 1);
 })
+
 
 // Listen to popstate event (go back)
 window.onpopstate = e => {
@@ -86,37 +106,43 @@ function get_profile(user_id) {
     fetch(`profile/${user_id}`)
     .then(response => response.json())
     .then(data => {
-        profile = data[0];
+        const profile = data[0];
 
         const element = document.createElement('div');
         element.className = 'media';
         element.dataset.userId = `${profile.id}`
 
-        let follow_btn = '';
+        let btn = '';
 
         // Check if user can be followed
-        if(profile.can_follow) {
-            // Check for follow status (follow/unfollow) and add btn
-            follow_btn = profile.is_following ? 
+        if(profile.user_logged_in && profile.not_user) {
+            // Add follow/unfollow btn
+            btn = profile.is_following ? 
                 `<a class="unfollow-btn btn btn-info btn-sm">
                     <i class="fa fa-check-circle" aria-hidden="true"></i> Following
                 </a>` :
                 `<a class="follow-btn btn btn-outline-info btn-sm">
                     <i class="fa fa-user-circle-o" aria-hidden="true"></i> Follow
                 </a>` ;
+        } else if(profile.user_logged_in) {
+            // Add edit profile btn
+            btn = `
+                <a class="edit-profile-btn btn btn-outline-secondary btn-sm">
+                    <i class="fa fa-pencil" aria-hidden="true"></i> Edit Profile
+                </a>
+            `;
         } else {
-            // Add btn with hidden visibility for spacing purpose
-            follow_btn = `<input class="btn btn-sm hidden">`
+            btn = `<input class="btn btn-sm hidden">`;
         }
 
         element.innerHTML = `
-            <img class="img-thumbnail rounded-circle" src="${profile.img_url}" width="150px" height="150px">
-            <div class="profile-content media-body pl-3">
+            <img class="img-thumbnail rounded-circle ml-sm-5 ml-0 my-2" src="${profile.img_url}" width="150px" height="150px">
+            <div class="media-body pl-3">
                 <div class="d-flex justify-content-end">
-                    <span>${follow_btn}</span>
+                    <span>${btn}</span>
                 </div>
-                <div class="px-2">
-                    <h1 class="mb-3">${profile.username}</h1>
+                <div id="profile-content" class="pl-sm-4 pl-1">
+                    <h1 class="my-3">${profile.username}</h1>
                     <span>${profile.following_num} </span>
                     <span class="small text-muted">Following</span>
   
@@ -132,29 +158,55 @@ function get_profile(user_id) {
 }
 
 
+function edit_profile(user_id) {
+
+    // Get inner HTML of update profile view to show
+    const element = profileView.querySelector('#profile-content');
+
+    element.innerHTML = updateProfileView.innerHTML;
+}
+
+
+function cancel_update_profile(user_id) {
+
+    // Get old user'profile info to shoe profile view
+    fetch(`profile/${user_id}`)
+    .then(response => response.json())
+    .then(data => {
+        const profile = data[0];
+        const element = profileView.querySelector('#profile-content');
+        
+        element.innerHTML = `
+            <h1 class="my-3">${profile.username}</h1>
+            <span>${profile.following_num} </span>
+            <span class="small text-muted">Following</span>
+
+            <span>${profile.followers_num} </span>
+            <span class="small text-muted">Followers</span>
+        `;
+    })
+}
+
+
 function get_posts(page, page_num) {
     page_num = parseInt(page_num);
     postView.className = page;
     postView.dataset.pageNum = page_num;
 
     if(page === 'all') {
-        if(form) {
-            form.style.display = 'block';
-        }
+        formView.style.display = 'block';
         profileView.style.display = 'none';
-        postView.innerHTML = `<h3>All Posts</h3>`;
+        postView.innerHTML = `<h3 class="mt-3">All Posts</h3>`;
 
     } else if(page === 'following') {
-        if(form) {
-            form.style.display = 'block';
-        }
+        formView.style.display = 'block';
         profileView.style.display = 'none';
-        postView.innerHTML = `<h3>Following</h3>`;
+        postView.innerHTML = `<h3 class="mt-3">Following</h3>`;
 
     } else {
-        form.style.display = 'none'; 
+        formView.style.display = 'none'; 
         profileView.style.display = 'block';
-        postView.innerHTML = `<h3>Posts</h3>`;
+        postView.innerHTML = `<h3 class="mt-3">Posts</h3>`;
     }
 
     // Get posts according to requested page & page number
@@ -207,7 +259,7 @@ function get_posts(page, page_num) {
             element.innerHTML = `
                 <ul class="pagination justify-content-end"></ul>
             `;
-        
+
             const pagination = element.children[0];
 
             // Create array of int from 1 to last page number
@@ -287,7 +339,7 @@ function new_post(post) {
     element.id = post.id
     element.className = 'post border rounded px-3 py-3 my-2';
 
-    const edit = post.editable ? `<span class="edit-btn btn btn-sm btn-link">Edit</span>` : '';
+    const edit = post.editable ? `<span class="edit-post-btn btn btn-sm btn-link">Edit</span>` : '';
     const heart = post.liked ? `<i class="unlike-btn fa fa-heart"></i>` : `<i class="like-btn fa fa-heart-o"></i>`;
 
     element.innerHTML = `
@@ -327,9 +379,12 @@ function edit_post(post_id) {
         // Change DOM element to edit post view
         post_body.innerHTML = `
             <textarea class="post-content mb-1" style="width: 100%">${post.content}</textarea>
-            <div class="d-flex">
-                <input class="update-btn btn btn-info btn-sm mr-2" type="submit" value="Save">
-                <input class="delete-btn btn btn-outline-danger btn-sm" type="submit" value="Delete" data-toggle="modal" data-target="#deleteModal">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <button class="update-post-btn btn btn-info btn-sm mr-2">Save</button>
+                    <button class="cancel-update-post-btn btn btn-secondary btn-sm">Cancel</button>
+                </div>
+                <button class="delete-btn btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Delete</button>
             </div>
         `;
     })
@@ -354,6 +409,24 @@ function update_post(post_id) {
         postView.replaceChild(new_post(post), old_post);
     })
     .catch(err => console.log(err));
+}
+
+
+function cancel_update_post(post_id) {
+    fetch(`edit/${post_id}`)
+    .then(response => response.json())
+    .then(data => {
+        const post = data[0];
+        const post_body = document.getElementById(post_id).children[1];
+        const heart = post.liked ? `<i class="unlike-btn fa fa-heart"></i>` : `<i class="like-btn fa fa-heart-o"></i>`;
+
+        // Change DOM element to normal post view
+        post_body.innerHTML = `
+            <p>${post.content}</p>
+            <span>${heart}</span> 
+            <span>${post.likes}</span>
+        `;
+    })
 }
 
 
@@ -402,7 +475,7 @@ function toggle_follow(user_id, is_following) {
     .then(data => {
         const profile = data[0];
 
-        const element = document.querySelector('.profile-content');
+        const element = profileView.querySelector('.media-body');
         const followers_num = element.children[1].children[3];
         followers_num.innerHTML = profile.followers_num;
 

@@ -121,11 +121,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# MEDIA ROOT FOLDER
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
-# from django.urls import reverse_lazy
-
-# LOGIN_URL = reverse_lazy('login')
-
-LOGIN_URL = '/login/'

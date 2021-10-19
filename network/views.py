@@ -8,25 +8,50 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from .models import *
-from .forms import NewPostForm
+from .forms import NewPostForm, UpdateUserForm, UpdateProfileForm
 
 def index(request):
+    
+    try:
+        user_form = UpdateUserForm(instance=request.user)
+    except AttributeError:
+        user_form = None
+
     # Check if request method is post (send new post)
     if request.method == 'POST':
-        post = request.POST.copy()
-        post["posted_by"] = request.user
-        request.POST = post
-        new_post = NewPostForm(post)
 
-        if new_post.is_valid():
-            new_post.save()
+        # Check if request for new post
+        if 'new_post' in request.POST:
+            post = request.POST.copy()
+            post["posted_by"] = request.user
+            request.POST = post
+            new_post = NewPostForm(post)
 
+            if new_post.is_valid():
+                new_post.save()
+
+        # Check if request for updae profile
+        if 'update_profile' in request.POST:
+            
+            new_username = UpdateUserForm(request.POST, instance=request.user)
+                
+            if new_username.is_valid():
+                new_username.save()
+
+            if request.FILES:
+                new_img = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
+
+                if new_img.is_valid():
+                    new_img.save()
+        
         # Return to index page and update posts
         return HttpResponseRedirect(reverse("index"))
 
     # Render new post form
     return render(request, "network/index.html", {
-        "form": NewPostForm()
+        "new_post_form": NewPostForm(),
+        "update_user_form": user_form,
+        "update_profile_form": UpdateProfileForm()
     })
 
 def get_posts(request, page, page_num):
@@ -96,9 +121,7 @@ def edit_post(request, post_id):
     try:
         post = Post.objects.get(id=post_id)
     except Post.DoesNotExist:
-        post = ''
-    # print(post)
-    # print(type(post))
+        pass
     
     # Check for PUT request on post
     if request.method == 'PUT':
@@ -119,14 +142,15 @@ def edit_post(request, post_id):
 
         post.save()
     
-    # Check for DELETErequest on post
+    # Check for DELETE request on post
     elif request.method == 'DELETE':
         if(post):
             post.delete()
         else:
             return JsonResponse({"message": "Post does not exist."}, status=403)
 
-        return JsonResponse({"message": "Post deleted."}, status=204)
+        print('delete')
+        return JsonResponse({"message": "Post deleted."}, status=200)
 
     return JsonResponse([post.serialize(request.user)], safe=False)
 

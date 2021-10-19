@@ -16,3 +16,25 @@ class NewPostForm(forms.ModelForm):
             }),
             'posted_by': forms.HiddenInput()
         }
+
+class UpdateUserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username']
+        help_texts = {
+            'username': None,
+        }
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control col-md-8"}),
+        }
+
+class UpdateProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['image']
+        labels = {
+            'image': 'Upload Photo'
+        }
+        widgets = {
+            "image": forms.ClearableFileInput(attrs={"class": "form-control-file"}),
+        }
