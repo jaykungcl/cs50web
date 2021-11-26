@@ -1,0 +1,10 @@
+.profile-header{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+}
+.profile-header .avatar img{
+    width: 150px;
+    height: 150px;
+}

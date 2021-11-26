@@ -1,0 +1,9 @@
+.home {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+.home input {
+    max-width: 500px;
+    margin: 0 auto;
+}

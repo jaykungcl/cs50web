@@ -1,0 +1,40 @@
+.create {
+    max-width: 480px;
+    margin: 60px auto;
+    width: 90%;
+}
+.create label span {
+    display: block;
+    margin: 30px 0 10px;
+}
+.create label p {
+    font-size: .8rem;
+    color: #888;
+}
+.create label textarea {
+    height: 100px;
+}
+.create p {
+    margin-top: 10px;
+    font-size: 0.8rem;
+}
+.create button{
+    display: block;
+    width: 100px;
+    font-size: 1.3rem;
+    color: #fff;
+    padding: 8px 20px;
+    border: 0;
+    border-radius: 4px;
+    background-color: rgb(243, 96, 96);
+    cursor: pointer;
+    text-decoration: none;
+    margin: 20px auto;
+}
+.create .ingredients{
+    display: flex;
+    align-items: center;
+}
+.create .ingredients button{
+    margin: 0 0 0 10px;
+}

@@ -1,0 +1,10 @@
+.auth-form {
+    margin: 0 auto;
+    max-width: 500px;
+}
+.auth-form h2{
+    margin-bottom: 1.5rem;
+}
+.auth-form input{
+    margin-bottom: .7rem;
+}

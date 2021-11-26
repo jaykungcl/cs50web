@@ -1,0 +1,52 @@
+.recipe {
+    max-width: 1200px;
+    margin: 40px auto;
+    text-align: center;
+    padding: 40px;
+    background-color: #fff;
+    position: relative;
+}
+.recipe .heart {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    height: 30px;
+    width: 30px;
+}
+.recipe .page-title {
+    margin: 0;
+    margin-bottom: .5rem;
+}
+.recipe p {
+    font-size: 1.2rem;
+    margin-bottom: .5rem;
+}
+.recipe ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 1rem auto;
+}
+@media screen and (max-width: 600px) {
+    .recipe ul {
+        flex-direction: column;
+    }
+}
+.recipe li {
+    list-style-type: none;
+    margin-top: 8px;
+    color: #777;
+    font-size: 1.3rem;
+}
+.recipe li::after {
+    content: ",";
+}
+.recipe li:last-child::after {
+    content: ".";
+}
+.method {
+    display: inline-block;
+    text-align: left;
+    line-height: 1.5;
+    margin-top: 20px;
+}
