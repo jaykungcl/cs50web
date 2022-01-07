@@ -192,6 +192,9 @@ def category(request, category_id):
 
 @login_required
 def create(request):
+    if request.method == "PUT":
+        print('put')
+
     if request.method == "POST":
 
         # Set value for listed_by field
