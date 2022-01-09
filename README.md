@@ -9,4 +9,4 @@ This is a repository for projects in my Harvard’s CS50 Web Programming With Py
 - Final Project: UMAI - A Recipe Directory
 
 
-Please do not hesitate to leave comments or suggestions!! :D
+Please do not hesitate to leave any comments or suggestions!! :D
