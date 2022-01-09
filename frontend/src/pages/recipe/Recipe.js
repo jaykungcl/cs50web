@@ -9,8 +9,8 @@ import { useFetch } from '../../hooks/useFetch';
 import './Recipe.css'
 // import Heart from '../../components/Heart';
 
-import Heart from '../../assets/heart-solid.svg'
-import HeartOutline from '../../assets/heart-regular.svg'
+import { ReactComponent as Heart } from '../../assets/heart-solid.svg'
+import { ReactComponent as HeartOutline } from '../../assets/heart-regular.svg'
 
 
 export default function Recipe() {
@@ -112,8 +112,10 @@ export default function Recipe() {
                     <h2 className="page-title">{data.title}</h2>
 
                     <div onClick={toggleLike} className="heart">
-                        {!data.liked && <img src={HeartOutline} alt="like button" />}
-                        {data.liked && <img src={Heart} alt="unlike button" />}
+                        {/* {!data.liked && <img className="like" src={HeartOutline} alt="like button" />}
+                        {data.liked && <img className="unlike" src={Heart} alt="unlike button" />} */}
+                        {!data.liked && <HeartOutline />}
+                        {data.liked && <Heart style={{ fill: '#ff4747' }} />}
                     </div>
                     {/* <Heart url={url} /> */}
 

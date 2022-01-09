@@ -70,6 +70,8 @@ class Recipe(models.Model):
         t = self.cooking_time
         if t < 60:
             return f"{t} minutes"
+        if t % 60 == 0:
+            return f"{t / 60} hour(s)"
         return f"{math.floor(t / 60)} hour(s) {t % 60} minutes"
 
     def serialize(self, user):
