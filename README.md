@@ -4,7 +4,9 @@ This is my design and implementation of Project 4 (Network) in Harvard’s CS50 
 
 Network is a twitter-like social network website for making posts and following users. This application was built using HTML, Bootstrap, JavaScript, and Django.
 
-Additional function that I have implemented (other than specification in requirements) was deleting post, add profile picture, edit profile, history/url state push and completely mobile responsive!
+There are many challenging tasks I encountered during the time I worked on the project; buidling my very first RESTful APIs, discovered ways of implementing pagination with JavaScript (Not an instant plug-in) and many more!
+
+Additional function that I have implemented (other than specification in requirements) was deleting post, add profile picture, edit profile, history/url state push and mobile responsive!
 
 HarvardX Project Description: https://cs50.harvard.edu/web/2020/projects/4/network/
 
