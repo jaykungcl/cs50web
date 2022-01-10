@@ -12,7 +12,7 @@ Other than mandatory requirements, I wrote my own Markdown to HTML conversion fu
 
 HarvardX Project Description: https://cs50.harvard.edu/web/2020/projects/1/wiki/#understanding
 
-How to Writ Markdown Guide: https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax
+Markdown Syntax Guide: https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax
 
 Project Demonstration: https://www.youtube.com/watch?v=0VXdsizhRp0&t=20s
 
