@@ -9,12 +9,13 @@ Instead of each entry being written in HTML, this project utilize Markdown for s
 
 Other than mandatory requirements, I wrote my own Markdown to HTML conversion function without using any external libraries. In the process I have learnt a lot about Regular Expression.
 
-
+```
 HarvardX Project Description: https://cs50.harvard.edu/web/2020/projects/1/wiki/#understanding
 
-How to Writ Markdown Guide: GitHub’s Markdown guide
+How to Writ Markdown Guide: https://help.github.com/en/github/writing-on-github/basic-writing-and-formatting-syntax
 
 Project Demonstration: https://www.youtube.com/watch?v=0VXdsizhRp0&t=20s
+```
 
 #### How to run this application?
 * This project has not yet been deployed onto the internet (Due to the complexity of deployment of dynamic web application) but you can run it on your own computer by following these steps
