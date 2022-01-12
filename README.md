@@ -8,4 +8,6 @@ HarvardX Project Description: https://cs50.harvard.edu/web/2020/projects/0/searc
 
 Project Demonstration: https://www.youtube.com/watch?v=G4P6PqKEAI8&t=11s
 
+Deployed on Netlify: https://hungry-davinci-ba4f4a.netlify.app
+
 Reference: https://www.google.com/
